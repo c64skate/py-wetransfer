@@ -9,7 +9,7 @@
 # URL           :https://github.com/superalex/py-wetransfer
 # DEPENDS       :pip install requests
 
-from urlparse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 import requests, sys, json, re, getopt, sys
 
 DOWNLOAD_URL_PARAMS_PREFIX = "downloads/"
@@ -18,10 +18,10 @@ CHUNK_SIZE = 1024
 def download(file_id, recipient_id, security_hash):
     url = "https://www.wetransfer.com/api/v1/transfers/{0}/download?recipient_id={1}&security_hash={2}&password=&ie=false".format(file_id, recipient_id, security_hash)
     r = requests.get(url)
-    download_data = json.loads(r.content)
+    download_data = json.loads(r.content.decode())
 
-    print "Downloading {0}...".format(url)
-    if download_data.has_key('direct_link'):
+    print("Downloading {0}...".format(url))
+    if 'direct_link' in download_data:
         content_info_string = parse_qs(urlparse(download_data['direct_link']).query)['response-content-disposition'][0]
         file_name = re.findall('filename="(.*?)"', content_info_string)[0].encode('ascii', 'ignore')
         r = requests.get(download_data['direct_link'], stream=True)
@@ -41,7 +41,7 @@ def download(file_id, recipient_id, security_hash):
 
     sys.stdout.write('\r100% {0}/{1}\n'.format(file_size, file_size))
     output_file.close()
-    print "Finished! {0}".format(file_name)
+    print("Finished! {0}".format(file_name))
 
 
 def extract_params(url):
@@ -68,14 +68,14 @@ def extract_url_redirection(url):
     return requests.get(url).url
 
 def usage():
-    print """
+    print("""
 You should have a we transfer address similar to https://www.wetransfer.com/downloads/XXXXXXXXXX/YYYYYYYYY/ZZZZZZZZ
 
 So execute:
     python wetransfer.py -u https://www.wetransfer.com/downloads/XXXXXXXXXXXXXXXXXXXXXXXXX/YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/ZZZZZ
 
 And download it! :)
-"""
+""")
     sys.exit()
 
 
